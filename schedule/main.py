@@ -19,4 +19,34 @@ class Job:
         self.last_run = None
         self.next_run = None
         self.time_unit = None
-        self.time_period = None    
+        self.time_period = None
+
+    @property
+    def second(self):
+        assert self.interval == 1
+        return self.seconds
+
+    @property
+    def seconds(self):
+        self.time_unit = 'seconds'
+        return self
+
+    @property
+    def minute(self):
+        assert self.interval == 1
+        return self.minutes
+
+    @property
+    def minutes(self):
+        self.time_unit = 'minutes'
+        return self
+
+    @property
+    def hour(self):
+        assert self.interval == 1
+        return self.hours
+
+    @property
+    def hours(self):
+        self.time_unit = 'hours'
+        return self
