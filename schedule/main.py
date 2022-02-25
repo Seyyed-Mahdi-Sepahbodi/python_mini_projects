@@ -53,6 +53,7 @@ class Job:
         self.job_function = None
         self.last_run = None
         self.next_run = None
+        self.at_time = None
         self.time_unit = None
         self.time_period = None
 
@@ -92,10 +93,37 @@ class Job:
         self.time_unit = 'hours'
         return self
 
+    @property
+    def day(self):
+        if self.interval != 1:
+            raise IntervalError('You should use days instead of day!')
+        return self.hours
+
+    @property
+    def days(self):
+        self.time_unit = 'days'
+        return self
+
     def do(self, job_function, *args, **kwargs):
         self.job_function = partial(job_function, *args, **kwargs)
         update_wrapper(self.job_function, job_function)
         self._schedule_next_run()
+        return self
+
+    def at(self, time_str):
+        if self.time_unit not in ('hours', 'days'):
+            raise ScheduleValueError('Invalid time unit value!')
+        hour, minute = [t for t in time_str.split(':')]
+        minute = int(minute)
+        if not 0 < minute <= 59:
+            raise ScheduleValueError('Invalid value for minute!')
+        if self.time_unit == 'days':
+            hour = int(hour)
+            if not 0 < hour <= 23:
+                raise ScheduleValueError('Invalid value for hour!')
+        elif self.time_unit == 'hours':
+            hour = 0
+        self.at_time = datetime.time(hour=hour, minute=minute)
         return self
 
     def _schedule_next_run(self):
