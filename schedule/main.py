@@ -127,10 +127,27 @@ class Job:
         return self
 
     def _schedule_next_run(self):
-        if self.time_unit not in ('seconds', 'minutes'):
+        if self.time_unit not in ('seconds', 'minutes', 'hours'):
             raise ValueError('Invalid time unit value!')
         self.time_period = datetime.timedelta(**{self.time_unit:self.interval})
         self.next_run = datetime.datetime.now() + self.time_period
+        if self.at_time is not None:
+            if self.time_unit not in ('hours', 'days'):
+                raise ScheduleValueError('Invalid time unit value!')
+            kwargs = {
+                'minute': self.at_time.minute,
+                'second': 0,
+                'microsecond': 0,
+            }
+            if self.time_unit == 'days':
+                kwargs['hour'] = self.at_time.hour
+            self.next_run = self.next_run.replace(**kwargs)
+            if not self.last_run:
+                now = datetime.datetime.now()
+                if self.time_unit == 'days' and self.at_time > now.time():
+                    self.next_run = self.next_run - datetime.timedelta(days=1)
+                elif self.time_unit == 'hours' and self.at_time.minute > now.minute:
+                    self.next_run = self.next_run - datetime.timedelta(hours=1)
 
     def run(self):
         result = self.job_function()
