@@ -1,6 +1,19 @@
 from functools import partial, update_wrapper
 import datetime
 
+
+class ScheduleError(Exception):
+    pass
+
+
+class ScheduleValueError(ScheduleError):
+    pass
+
+
+class IntervalError(ScheduleValueError):
+    pass
+
+
 class Scheduler:
     
     def __init__(self):
@@ -32,7 +45,8 @@ class Job:
 
     @property
     def second(self):
-        assert self.interval == 1
+        if self.interval != 1:
+            raise IntervalError('You should use seconds instead of second!')
         return self.seconds
 
     @property
@@ -42,7 +56,8 @@ class Job:
 
     @property
     def minute(self):
-        assert self.interval == 1
+        if self.interval != 1:
+            raise IntervalError('You should use minutes instead of minute!')
         return self.minutes
 
     @property
@@ -52,7 +67,8 @@ class Job:
 
     @property
     def hour(self):
-        assert self.interval == 1
+        if self.interval != 1:
+            raise IntervalError('You should use hours instead of hour!')
         return self.hours
 
     @property
@@ -67,7 +83,8 @@ class Job:
         return self
 
     def _schedule_next_run(self):
-        assert self.time_unit in ('seconds', 'minutes')
+        if self.time_unit not in ('seconds', 'minutes'):
+            raise ValueError('Invalid time unit value!')
         self.time_period = datetime.timedelta(**{self.time_unit:self.interval})
         self.next_run = datetime.datetime.now() + self.time_period
 
